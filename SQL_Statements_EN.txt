@@ -1,0 +1,332 @@
+I. Basic Statements
+1. SELECT statement is used to select data from a database
+	1)SELECT name,country FROM Websites; 2)SELECT * FROM Websites;
+
+2. SELECT DISTINCT statement is used to return unique values
+	SELECT DISTINCT country FROM Websites;
+
+3. WHERE clause is used to filter records
+	SELECT * FROM Websites WHERE country='CN';#Numbers don't need quotes
+
+4. AND & OR operators are used to filter records based on more than one condition
+	SELECT * FROM Websites
+	WHERE country='CN' #Can be OR
+	AND alexa > 50;
+
+5. ORDER BY keyword is used to sort the result-set by one or more columns
+	1)SELECT * FROM Websites
+	   ORDER BY alexa; #Default ascending order
+	2)SELECT * FROM Websites
+	   ORDER BY alexa DESC; #Descending order
+	3)SELECT * FROM Websites
+	   ORDER BY country,alexa; #Multiple sorting
+
+6. INSERT INTO statement is used to insert new records into a table
+	INSERT INTO Websites (name, url, alexa, country) #If data is incomplete, default values will be added eg. 0
+	VALUES ('Baidu','https://www.baidu.com/','4','CN');
+
+7. UPDATE statement is used to modify existing records in a table
+	UPDATE Websites 
+	SET alexa='5000', country='USA' 
+	WHERE name='Runoob'; #!Without WHERE all data will be updated
+
+8. DELETE statement is used to delete rows from a table
+	DELETE FROM Websites
+	WHERE name='Facebook' AND country='USA';
+
+9. AS is mainly used to specify aliases for columns, tables or subquery results
+	SELECT COUNT(*) AS total_count, 
+		    AVG(price) AS average_price
+	FROM products;
+
+II. Basic Functions
+1. SQL Aggregate Functions: Calculate values from columns and return a single value
+
+	AVG() - Returns the average value
+		SELECT AVG(column_name) FROM table_name
+
+	COUNT() - Returns the number of rows
+		1)SELECT COUNT(column_name) FROM table_name;
+		2)SELECT COUNT(*) FROM table_name; #Total records
+		3)SELECT COUNT(DISTINCT column_name) FROM table_name;
+
+	FIRST() - Returns the first value
+		1)SELECT FIRST(column_name) FROM table_name;
+		2)SELECT column_name FROM table_name #In MySQL
+		ORDER BY column_name ASC
+		LIMIT 1;
+
+	LAST() - Returns the last value
+		1)SELECT LAST(column_name) FROM table_name; #In MySQL
+		2)SELECT column_name FROM table_name
+		ORDER BY column_name DESC
+		LIMIT 1;
+
+	MAX() - Returns the maximum value
+		SELECT MAX(column_name) FROM table_name;
+
+	MIN() - Returns the minimum value
+		SELECT MIN(column_name) FROM table_name;
+
+	SUM() - Returns the total sum
+		SELECT SUM(column_name) FROM table_name;
+
+2. SQL Scalar Functions: Return a single value based on input value
+
+	UCASE() - Converts a field to uppercase
+		SELECT UCASE(column_name) FROM table_name;
+
+	LCASE() - Converts a field to lowercase
+		SELECT LCASE(column_name) FROM table_name;
+
+	MID() - Extracts characters from a text field
+		SELECT MID(column_name[,start,length]) FROM table_name;
+		Example:
+		SELECT MID(name,1,4) AS ShortTitle
+		FROM Websites;
+
+	SubString(field,1,end) - Extracts characters from a text field #Similar to mid, may be in other languages
+	LEN() - Returns the length of a text field
+		SELECT LEN(column_name) FROM table_name; #In MySQL it's LENGTH
+		Example:
+		SELECT name, LENGTH(url) as LengthOfURL
+		FROM Websites;
+
+	ROUND() - Rounds a numeric field to specified decimals
+		SELECT ROUND(column_name,decimals) FROM TABLE_NAME; #decimals places
+
+	NOW() - Returns current system date and time
+		SELECT NOW() FROM table_name;
+		Example:
+		SELECT name, url, Now() AS date
+		FROM Websites;
+
+	FORMAT() - Formats how a field is displayed
+		SELECT FORMAT(column_name,format) 
+		FROM table_name;
+		Example:
+		SELECT name, url, DATE_FORMAT(Now(),'%Y-%m-%d') AS date
+		FROM Websites;
+
+3. Other Functions
+
+	SQL GROUP BY Statement: Used with aggregate functions to group result-set by one or more columns
+		SELECT column_name, aggregate_function(column_name)
+		FROM table_name
+		WHERE column_name operator value #Pre-grouping filter
+		GROUP BY column_name;
+		Example:
+		1)SELECT site_id, SUM(access_log.count) AS nums
+		FROM access_log GROUP BY site_id;
+		2)Multiple table joins
+
+	SQL HAVING Clause: Lets us filter grouped data #WHERE before GROUP BY, HAVING after
+		SELECT column1, aggregate_function(column2)
+		FROM table_name
+		GROUP BY column1
+		HAVING condition;  #Post-grouping filter
+		Example:
+		1)Two tables, find websites with over 200 visits
+
+	SQL EXISTS Operator: Checks if subquery has records, returns True if any exist
+		SELECT column_name(s)
+		FROM table_name
+		WHERE EXISTS (SELECT column_name FROM table_name WHERE condition);
+		Example:
+		1)Check if websites with total visits (count field) > 200 exist
+		SELECT Websites.name, Websites.url 
+		FROM Websites 
+		WHERE EXISTS (SELECT count FROM access_log WHERE Websites.id = access_log.site_id AND count > 200);
+
+
+III. Advanced Statements
+
+	SQL SELECT TOP, LIMIT, ROWNUM Clause: Limits returned rows in result-set
+		In MySQL:
+		SELECT column1, column2, ...
+		FROM table_name
+		LIMIT number;
+
+	SQL LIKE Operator
+		SELECT column1, column2, ...
+		FROM table_name
+		WHERE column_name LIKE pattern; #  %: matches any characters (including none), _: matches single character
+		Example: 1)Find all products starting with "iPhone":
+		SELECT ProductName, Category
+		FROM Products
+		WHERE ProductName LIKE 'iPhone%';
+		2)Select all customers where name contains "oo":
+		SELECT * FROM Websites
+		WHERE name LIKE '%oo%';
+
+	SQL Wildcards: Used with LIKE
+		%: Replaces 0+ characters
+		_: Replaces single character
+		[charlist]: Any single character in the list
+		[^charlist] or [!charlist]: Any single character not in the list
+		Example:
+		Select websites where name starts with "G", "F" or "s":
+		SELECT * FROM Websites
+		WHERE name REGEXP '^[GFs]';
+		Select websites where name doesn't start with A-H:
+		SELECT * FROM Websites
+		WHERE name REGEXP '^[^A-H]';
+
+	SQL IN Operator: Allows multiple values in WHERE clause
+		SELECT column1, column2, ...
+		FROM table_name
+		WHERE column IN (value1, value2, ...);
+		Example:
+		SELECT * FROM Websites
+		WHERE name IN ('Google','Runoob'); #Previously only single value, now multiple
+
+	SQL BETWEEN Operator: Selects values within a range (numbers, text, dates)
+		SELECT column1, column2, ...
+		FROM table_name
+		WHERE column BETWEEN value1 AND value2;
+		Example:
+		Select websites where name starts between 'A' and 'H':
+		SELECT * FROM Websites
+		WHERE name BETWEEN 'A' AND 'H';
+
+	SQL JOIN: Different join methods may produce NULL in tables
+		SELECT column1, column2, ...
+		FROM table1
+		JOIN table2 ON condition;
+		Example (no NULLs):
+		SELECT Websites.id, Websites.name, access_log.count, access_log.date
+		FROM Websites
+		INNER JOIN access_log
+		ON Websites.id=access_log.site_id;
+		Remember these (NULL appears for non-matches):
+		INNER JOIN: Returns rows with matches
+		LEFT JOIN: Returns all left table rows, even without right matches
+		RIGHT JOIN: Returns all right table rows, even without left matches
+		FULL JOIN: Returns rows when there's a match in either table
+
+	SQL UNION Operator: Combines result-sets of multiple SELECTs (same column count)
+		SELECT column1, column2, ...
+		FROM table1
+		UNION
+		SELECT column1, column2, ...
+		FROM table2;
+
+	SQL UNION ALL: All values (including duplicates)
+		SELECT column1, column2, ...
+		FROM table1
+		UNION ALL
+		SELECT column1, column2, ...
+		FROM table2;
+
+	SQL SELECT INTO Statement: Copies data into new table
+		SELECT *
+		INTO employees_backup #New table
+		FROM employees;
+		MySQL doesn't support SELECT...INTO, but supports INSERT INTO...SELECT:
+		CREATE TABLE new_table
+		AS
+		SELECT * FROM old_table 
+		Example:
+		CREATE TABLE employees_backup AS
+		SELECT EmployeeID, FirstName, LastName, Age, Department
+		FROM employees
+		WHERE Age > 25;
+
+	SQL INSERT INTO SELECT Statement: Copies data into existing table
+		INSERT INTO table2
+		SELECT * FROM table1;
+		Or specify columns:
+		INSERT INTO table2			
+		(column_name(s))
+		SELECT column_name(s)
+		FROM table1;
+		Example:
+		INSERT INTO Websites (name, country)
+		SELECT app_name, country FROM apps;
+
+DDL:
+
+	SQL CREATE DATABASE Statement: Creates a database
+		CREATE DATABASE dbname;
+
+	SQL CREATE TABLE Statement
+		CREATE TABLE table_name
+		(
+		column_name1 data_type(size), #int, varchar,
+		column_name2 data_type(size),
+		column_name3 data_type(size),
+		....
+		);
+
+	SQL Constraints: Rules for table data
+		1. NOT NULL: Column cannot contain NULL
+		2. UNIQUE: All values must be unique
+		3. PRIMARY KEY: Uniquely identifies each record (NOT NULL + UNIQUE)
+		4. FOREIGN KEY: Links two tables by matching values
+		5. CHECK: Ensures values meet conditions
+		6. DEFAULT: Sets default value
+		7. INDEX: Quickly accesses table data
+		Example:
+		CREATE TABLE Students (
+    			StudentID INT NOT NULL PRIMARY KEY,
+    			LastName VARCHAR(50) NOT NULL,
+    			FirstName VARCHAR(50) NOT NULL,
+    			Age INT CHECK (Age >= 18),
+    			Email VARCHAR(100) UNIQUE,
+    			EnrollmentDate DATE DEFAULT GETDATE()#Default current date
+		);
+		MySQL:
+		CREATE TABLE Persons (
+    			P_Id INT NOT NULL,
+    			LastName VARCHAR(255) NOT NULL,
+    			FirstName VARCHAR(255),
+    			UNIQUE (P_Id) or PRIMARY KEY (P_Id) or CHECK (P_Id>0)
+		);
+		MySQL: Create FOREIGN KEY on "P_Id" when creating "Orders" table:
+			CREATE TABLE Orders
+			(
+			O_Id int NOT NULL,
+			OrderNo int NOT NULL,
+			P_Id int,
+			PRIMARY KEY (O_Id),
+			FOREIGN KEY (P_Id) REFERENCES Persons(P_Id)
+			)
+		INDEX example:
+			CREATE (UNIQUE) INDEX index_name
+			ON table_name (column_name,column_name...)
+
+	SQL Drop Index, Table and Database:
+		index:
+		DROP INDEX [IF EXISTS] index_name
+		ON TABLE_NAME;
+		table:
+		DROP TABLE [IF EXISTS] TABLE_NAME;
+		database:
+		DROP DATABASE [IF EXISTS] database_name;
+
+	TRUNCATE TABLE Statement: Deletes data but not table
+		TRUNCATE TABLE TABLE_NAME;
+
+	SQL ALTER TABLE Statement: Adds, deletes or modifies columns
+		Add column:
+		ALTER TABLE table_name
+		ADD column_name datatype
+		DROP COLUMN column_name
+		MySQL/Oracle:
+		ALTER TABLE table_name
+		MODIFY COLUMN column_name datatype
+
+	SQL AUTO INCREMENT Field: Auto-generates primary key values
+		ALTER TABLE Persons AUTO_INCREMENT=100
+		INSERT INTO Persons (FirstName,LastName)
+		VALUES ('Lars','Monsen')
+
+	SQL Views: Virtual tables based on queries
+		CREATE VIEW view_name AS
+		SELECT column1, column2, ...
+		FROM table_name
+		WHERE condition;
+		Update:
+		First update table, then query
+		Delete:
+		DROP VIEW [IF EXISTS] view_name;
